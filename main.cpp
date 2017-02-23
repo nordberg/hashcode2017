@@ -64,7 +64,7 @@ std::vector<std::vector<int>> knapsack_solver() {
         cache_with_sizes.emplace_back(i, median_dist[i]);
     }
     std::sort(cache_with_sizes.begin(), cache_with_sizes.end(), [](const pii &a, const pii &b){
-        return a.second < b.second;
+        return a.second > b.second;
     });
 
     for (auto &p : cache_with_sizes) {
