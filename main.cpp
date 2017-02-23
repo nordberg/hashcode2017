@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "knapsack.hpp"
 
@@ -27,6 +28,13 @@ std::vector<int> video_sizes;
 std::vector<EndPoint> end_points;
 std::vector<Request> requests;
 
+std::vector<std::unordered_set<int>> points_in_cache;
+
+// endpoints to video
+std::vector<std::unordered_set<int>> video_by_endpoint;
+// videos needed by endpoint
+std::vector<std::unordered_set<int>> endpoint_by_video;
+
 std::vector<std::vector<int>> knapsack_solver() {
     // video ID to total saved time
     std::vector<std::unordered_map<int, int>> cache_videos(C);
@@ -43,7 +51,9 @@ std::vector<std::vector<int>> knapsack_solver() {
 
     std::vector<std::vector<int>> res;
     int count = 0;
-    for (auto &cache : cache_videos) {
+    for (int i = 0; i < C; i++) {
+        auto &cache = cache_videos[i];
+
         std::cerr << count << '\n';
         // knapsack items: weight MB, value saved time
         std::vector<Item> items;
@@ -52,15 +62,31 @@ std::vector<std::vector<int>> knapsack_solver() {
         for (auto &video : cache) {
             int video_id = video.first;
             int saved_time = video.second;
+
+            // dont add covered videos
+            bool needed = false;
+            for (auto &endp : video_by_endpoint[video_id]) {
+                if (points_in_cache[i].count(endp) > 0) {
+                    needed = true;
+                    break;
+                }
+            }
+            if (!needed) continue;
+
             items.emplace_back(saved_time, video_sizes[video_id]);
             ids.emplace_back(video_id);
         }
         std::vector<int> added_videos;
         knapsack(X, items.begin(), items.end(), back_inserter(added_videos));
         std::vector<int> added_ids;
+
         // get the added video ids
         for (auto &item_index : added_videos) {
             added_ids.emplace_back(ids[item_index]);
+            for (int endpoint : points_in_cache[i]) {
+                endpoint_by_video[endpoint].erase(added_ids.back());
+                video_by_endpoint[added_ids.back()].erase(endpoint);
+            }
         }
         res.push_back(std::move(added_ids));
         count++;
@@ -71,6 +97,9 @@ std::vector<std::vector<int>> knapsack_solver() {
 
 void read_input() {
     std::cin >> V >> E >> R >> C >> X;
+    points_in_cache = std::vector<std::unordered_set<int>>(C);
+    video_by_endpoint = std::vector<std::unordered_set<int>>(V);
+    endpoint_by_video = std::vector<std::unordered_set<int>>(E);
 
     for (size_t i = 0; i < V; i++) {
         int s_i;
@@ -84,10 +113,12 @@ void read_input() {
         int caches;
         std::cin >> caches;
         end_points.emplace_back(latency);
+
         for (size_t j = 0; j < caches; j++) {
             int id, cache_latency;
             std::cin >> id >> cache_latency;
             end_points.back().caches[id] = cache_latency;
+            points_in_cache[id].insert(i);
         }
     }
 
@@ -95,6 +126,8 @@ void read_input() {
         int id, endpoint, num_req;
         std::cin >> id >> endpoint >> num_req;
         requests.emplace_back(Request{id, endpoint, num_req});
+        endpoint_by_video[endpoint].insert(id);
+        video_by_endpoint[id].insert(endpoint);
     }
 }
 
