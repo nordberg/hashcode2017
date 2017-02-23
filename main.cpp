@@ -42,7 +42,9 @@ std::vector<std::vector<int>> knapsack_solver() {
     }
 
     std::vector<std::vector<int>> res;
+    int count = 0;
     for (auto &cache : cache_videos) {
+        std::cerr << count << '\n';
         // knapsack items: weight MB, value saved time
         std::vector<Item> items;
         // video ids of the cache videos
@@ -61,6 +63,7 @@ std::vector<std::vector<int>> knapsack_solver() {
             added_ids.emplace_back(ids[item_index]);
         }
         res.push_back(std::move(added_ids));
+        count++;
     }
 
     return res;
