@@ -37,6 +37,8 @@ std::vector<int> median_dist;
 std::vector<std::unordered_set<int>> video_by_endpoint;
 // videos needed by endpoint
 std::vector<std::unordered_set<int>> endpoint_by_video;
+// saved time for video
+std::vector<std::unordered_map<int,int>> cache_by_video;
 
 typedef std::pair<int,int> pii;
 
@@ -116,6 +118,7 @@ void read_input() {
     points_in_cache = std::vector<std::unordered_set<int>>(C);
     video_by_endpoint = std::vector<std::unordered_set<int>>(V);
     endpoint_by_video = std::vector<std::unordered_set<int>>(E);
+    cache_by_video = std::vector<std::unordered_map<int,int>>(C);
 
     std::vector<std::vector<int>> latencies(C);
 
@@ -137,13 +140,7 @@ void read_input() {
             std::cin >> id >> cache_latency;
             end_points.back().caches[id] = cache_latency;
             points_in_cache[id].insert(i);
-            latencies[id].emplace_back(cache_latency);
         }
-    }
-
-    for (size_t i = 0; i < C; i++) {
-        std::sort(latencies[i].begin(), latencies[i].end());
-        median_dist[i] = latencies[i][latencies[i].size()/2];
     }
 
     for (size_t i = 0; i < R; i++) {
@@ -152,6 +149,20 @@ void read_input() {
         requests.emplace_back(Request{id, endpoint, num_req});
         endpoint_by_video[endpoint].insert(id);
         video_by_endpoint[id].insert(endpoint);
+
+        for (auto &c : end_points[endpoint].caches) {
+            cache_by_video[c.first][id] += end_points[endpoint].latency - c.second;
+        }
+
+    }
+
+    for (int i = 0; i < C; i++) {
+        std::vector<int> saves;
+        for (auto &e : cache_by_video[i]) {
+            saves.emplace_back(e.second);
+        }
+        std::sort(saves.begin(), saves.end());
+        median_dist[i] = saves[saves.size()/2];
     }
 }
 
