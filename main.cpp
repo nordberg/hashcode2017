@@ -3,6 +3,8 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <tuple>
+#include <algorithm>
 
 #include "knapsack.hpp"
 
@@ -29,11 +31,14 @@ std::vector<EndPoint> end_points;
 std::vector<Request> requests;
 
 std::vector<std::unordered_set<int>> points_in_cache;
+std::vector<int> median_dist;
 
 // endpoints to video
 std::vector<std::unordered_set<int>> video_by_endpoint;
 // videos needed by endpoint
 std::vector<std::unordered_set<int>> endpoint_by_video;
+
+typedef std::pair<int,int> pii;
 
 std::vector<std::vector<int>> knapsack_solver() {
     // video ID to total saved time
@@ -51,7 +56,17 @@ std::vector<std::vector<int>> knapsack_solver() {
 
     std::vector<std::vector<int>> res;
     int count = 0;
+
+    std::vector<pii> cache_with_sizes;
     for (int i = 0; i < C; i++) {
+        cache_with_sizes.emplace_back(i, points_in_cache[i].size());
+    }
+    std::sort(cache_with_sizes.begin(), cache_with_sizes.end(), [](const pii &a, const pii &b){
+        return a.second < b.second;
+    });
+
+    for (auto &p : cache_with_sizes) {
+        int i = p.first;
         auto &cache = cache_videos[i];
 
         std::cerr << count << '\n';
@@ -97,6 +112,7 @@ std::vector<std::vector<int>> knapsack_solver() {
 
 void read_input() {
     std::cin >> V >> E >> R >> C >> X;
+    median_dist = std::vector<int>(C);
     points_in_cache = std::vector<std::unordered_set<int>>(C);
     video_by_endpoint = std::vector<std::unordered_set<int>>(V);
     endpoint_by_video = std::vector<std::unordered_set<int>>(E);
