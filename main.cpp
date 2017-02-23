@@ -20,6 +20,10 @@ std::vector<int> video_sizes;
 std::vector<EndPoint> end_points;
 std::vector<Request> requests;
 
+std::vector<std::vector<int>> knapsack() {
+    return {{}};
+}
+
 void read_input() {
     std::cin >> V >> E >> R >> C >> X;
 
@@ -46,7 +50,8 @@ void read_input() {
         int id, endpoint, num_req;
         std::cin >> id >> endpoint >> num_req;
         requests.emplace_back(Request{id, endpoint, num_req});
-    }}
+    }
+}
 
 int main(int argc, char const *argv[]) {
     read_input();
