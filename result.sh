@@ -6,5 +6,5 @@ ARGS="$@"
 for input in ${ARGS:-$FILES}
 do
 	echo "$input""…"
-	./a.out $input > ${input/.in/.out}
+	./a.out < $input > ${input/.in/.out}
 done
