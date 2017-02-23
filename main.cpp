@@ -59,7 +59,7 @@ std::vector<std::vector<int>> knapsack_solver() {
 
     std::vector<pii> cache_with_sizes;
     for (int i = 0; i < C; i++) {
-        cache_with_sizes.emplace_back(i, points_in_cache[i].size());
+        cache_with_sizes.emplace_back(i, median_dist[i]);
     }
     std::sort(cache_with_sizes.begin(), cache_with_sizes.end(), [](const pii &a, const pii &b){
         return a.second < b.second;
@@ -117,6 +117,8 @@ void read_input() {
     video_by_endpoint = std::vector<std::unordered_set<int>>(V);
     endpoint_by_video = std::vector<std::unordered_set<int>>(E);
 
+    std::vector<std::vector<int>> latencies(C);
+
     for (size_t i = 0; i < V; i++) {
         int s_i;
         std::cin >> s_i;
@@ -135,7 +137,13 @@ void read_input() {
             std::cin >> id >> cache_latency;
             end_points.back().caches[id] = cache_latency;
             points_in_cache[id].insert(i);
+            latencies[id].emplace_back(cache_latency);
         }
+    }
+
+    for (size_t i = 0; i < C; i++) {
+        std::sort(latencies[i].begin(), latencies[i].end());
+        median_dist[i] = latencies[i][latencies[i].size()/2];
     }
 
     for (size_t i = 0; i < R; i++) {
